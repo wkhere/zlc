@@ -62,10 +62,7 @@ func main() {
 	}
 }
 
-func die(exitcode int, a ...any) {
-	if len(a) > 0 {
-		fmt.Fprint(os.Stderr, "zlc: ")
-		fmt.Fprintln(os.Stderr, a...)
-	}
-	os.Exit(exitcode)
+func die(code int, err error) {
+	fmt.Fprintln(os.Stderr, "zlc:", err)
+	os.Exit(code)
 }
