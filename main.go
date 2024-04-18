@@ -1,4 +1,4 @@
-// xflate compresses or decompresses deflate stream.
+// zlc compresses or decompresses using zlib format.
 package main
 
 import (
