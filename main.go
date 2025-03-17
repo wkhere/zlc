@@ -9,6 +9,7 @@ import (
 )
 
 const fileExt = ".zl"
+const discard = "∅"
 
 type action struct {
 	fileIn        string
@@ -32,7 +33,10 @@ func openIn(path string) (*os.File, error) {
 	return os.Open(path)
 }
 
-func openOut(path string, force bool) (*os.File, error) {
+func openOut(path string, force bool) (io.Writer, error) {
+	if path == discard {
+		return io.Discard, nil
+	}
 	if path == "-" {
 		return os.Stdout, nil
 	}
@@ -62,7 +66,7 @@ func run(a action) (rerr error) {
 		if err != nil {
 			return fmt.Errorf("failed creating compress writer: %w", err)
 		}
-		defer safeClose(out, &rerr)
+		defer safeCloseWriter(out, &rerr)
 
 		_, err = io.Copy(w, in)
 		if err != nil {
@@ -84,7 +88,7 @@ func run(a action) (rerr error) {
 		if err != nil {
 			return err
 		}
-		defer safeClose(out, &rerr)
+		defer safeCloseWriter(out, &rerr)
 
 		_, err = io.Copy(out, r)
 		if err != nil {
@@ -115,6 +119,12 @@ func safeClose(c io.Closer, errp *error) {
 	cerr := c.Close()
 	if cerr != nil && *errp == nil {
 		*errp = cerr
+	}
+}
+
+func safeCloseWriter(w io.Writer, errp *error) {
+	if c, ok := w.(io.Closer); ok {
+		safeClose(c, errp)
 	}
 }
 
